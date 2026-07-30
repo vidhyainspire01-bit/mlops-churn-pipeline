@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "churn_model"
+version = "0.1.0"
+description = "Production churn prediction model with full MLOps lifecycle"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Vidhya Thiruvenkadam", email = "vidhya.inspire01@gmail.com"}
+]
+dependencies = [
+    "xgboost>=2.0.0",
+    "scikit-learn>=1.4.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "mlflow>=2.20.0",
+    "pyarrow>=15.0.0",
+    "pyyaml>=6.0",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"churn_model.conf" = ["*.yml"]

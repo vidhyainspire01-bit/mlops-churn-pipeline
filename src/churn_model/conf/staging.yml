@@ -1,0 +1,14 @@
+catalog: ml_stage
+schema: churn
+model_name: churn_model
+training:
+  n_estimators: 200
+  max_depth: 6
+  learning_rate: 0.05
+  test_size: 0.2
+  random_state: 42
+data:
+  n_samples: 50000
+quality_gates:
+  min_auc: 0.78
+  min_precision: 0.72

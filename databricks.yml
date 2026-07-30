@@ -1,0 +1,51 @@
+bundle:
+  name: mlops-churn-pipeline
+
+# Variables that can be overridden per target
+variables:
+  catalog:
+    description: "Unity Catalog for this environment"
+    default: ml_dev
+  schema:
+    description: "Schema within the catalog"
+    default: churn
+  cluster_node_type:
+    description: "Node type for job clusters"
+    default: Standard_DS3_v2
+
+# Include external resource definitions
+include:
+  - resources/*.yml
+
+# Three targets — dev, staging, prod
+targets:
+
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://adb-7405610668432577.17.azuredatabricks.net/
+    variables:
+      catalog: ml_dev
+      schema: churn
+      cluster_node_type: Standard_DS3_v2
+
+  staging:
+    mode: production
+    workspace:
+      host: https://adb-7405610668432577.17.azuredatabricks.net/
+      root_path: /Workspace/Shared/mlops-churn-pipeline/staging
+    variables:
+      catalog: ml_staging
+      schema: churn
+      cluster_node_type: Standard_DS4_v2
+
+  prod:
+    mode: production
+    workspace:
+      host: https://adb-7405610668432577.17.azuredatabricks.net/
+      root_path: /Workspace/Shared/mlops-churn-pipeline/prod
+    variables:
+      catalog: ml_prod
+      schema: churn
+      cluster_node_type: Standard_DS5_v2

@@ -1,0 +1,27 @@
+resources:
+  jobs:
+    churn_training_job:
+      name: "[${bundle.target}] Churn Model Training"
+      description: "End-to-end churn model training with UC registration"
+
+      tasks:
+        - task_key: train_churn_model
+          spark_python_task:
+            python_file: ../src/churn_model/training/train.py
+            parameters:
+              - "--env"
+              - "${bundle.target}"
+          environment_key: default_env
+
+      environments:
+        - environment_key: default_env
+          spec:
+            client: "3"
+            dependencies:
+              - ../dist/churn_model-0.1.0-py3-none-any.whl
+              - pyyaml>=6.0
+
+      tags:
+        team: "mlops"
+        model: "churn"
+        environment: "${bundle.target}"
