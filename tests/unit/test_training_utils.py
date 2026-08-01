@@ -1,6 +1,5 @@
 """Unit tests for training utility functions."""
 import pandas as pd
-import pytest
 
 from churn_model.features.synthetic_data import generate_churn_dataset
 

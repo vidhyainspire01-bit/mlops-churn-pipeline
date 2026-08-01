@@ -48,11 +48,11 @@ def score_model_by_alias(model_uri: str, X: pd.DataFrame, y: pd.Series) -> float
     # Try 1: predict with original int types (works for old int schema)
     try:
         y_proba = model.predict(X)
-        logger.info(f"  Scored with int schema (original)")
+        logger.info("  Scored with int schema (original)")
     except Exception as e:
         if "float64" in str(e) or "double" in str(e):
             # Model expects float64 - cast and retry
-            logger.info(f"  Model expects float64 schema - casting and retrying")
+            logger.info("  Model expects float64 schema - casting and retrying")
             X_float = X.astype(
                 {c: "float64" for c in X.select_dtypes(include="int").columns}
             )
