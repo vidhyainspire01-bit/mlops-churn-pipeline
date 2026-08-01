@@ -1,4 +1,4 @@
-catalog: ml_stage
+catalog: ml_staging
 schema: churn
 model_name: churn_model
 training:

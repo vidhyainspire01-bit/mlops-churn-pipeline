@@ -51,12 +51,7 @@ def evaluate(model: XGBClassifier, X_test: pd.DataFrame, y_test: pd.Series) -> d
 
 
 def train(env: str) -> None:
-    """
-    Full training pipeline: generate data, train, evaluate, register to UC.
-
-    Args:
-        env: environment name (dev / staging / prod) — drives config
-    """
+    """Full training pipeline: generate data, train, evaluate, register to UC."""
     config = load_config(env)
     catalog = config["catalog"]
     schema = config["schema"]
@@ -118,7 +113,7 @@ def train(env: str) -> None:
             mlflow.log_metric(name, value)
             logger.info(f"  {name}: {value:.4f}")
 
-        # 4. Quality gate — fail early if model is bad
+        # 4. Quality gate - fail early if model is bad
         gates = config["quality_gates"]
         if metrics["auc"] < gates["min_auc"]:
             raise ValueError(
@@ -128,34 +123,54 @@ def train(env: str) -> None:
             raise ValueError(
                 f"Quality gate failed: Precision {metrics['precision']:.4f} below threshold {gates['min_precision']}"
             )
-        logger.info("✓ Quality gates passed")
+        logger.info("Quality gates passed")
 
-        # 5. Log model with signature — critical for serving
-        signature = infer_signature(X_test, model.predict_proba(X_test))
-        input_example = X_test.iloc[:3]
+        # 5. Log model with signature - cast ints to float64 so nulls at inference are handled
+        X_test_for_sig = X_test.astype(
+            {c: "float64" for c in X_test.select_dtypes(include="int").columns}
+        )
+        signature = infer_signature(X_test_for_sig, model.predict_proba(X_test_for_sig))
+        input_example = X_test_for_sig.iloc[:3]
 
         mlflow.xgboost.log_model(
             xgb_model=model,
-            artifact_path="model",
+            name="model",
             signature=signature,
             input_example=input_example,
             registered_model_name=full_model_name,
         )
-        logger.info(f"✓ Model registered to Unity Catalog: {full_model_name}")
+        logger.info(f"Model registered to Unity Catalog: {full_model_name}")
 
-        # 6. Set aliases (first-time or promote)
+        # 6. Alias strategy:
+        # - If no @champion exists, this is the first model - set as @champion
+        # - Otherwise, register as @challenger for promotion evaluation
         client = mlflow.tracking.MlflowClient()
-        latest_version = client.get_latest_versions(full_model_name)[0].version
+        versions = client.search_model_versions(f"name='{full_model_name}'")
+        latest_version = max(int(v.version) for v in versions)
 
-        # In dev, always set new version as champion
-        # In staging/prod, this would go through challenger flow (Phase 4)
-        if env == "dev":
+        try:
+            existing_champion = client.get_model_version_by_alias(full_model_name, "champion")
+            has_champion = True
+            logger.info(f"Existing @champion found: version {existing_champion.version}")
+        except Exception:
+            has_champion = False
+            logger.info("No existing @champion found")
+
+        if not has_champion:
             client.set_registered_model_alias(
                 name=full_model_name,
                 alias="champion",
                 version=latest_version,
             )
-            logger.info(f"✓ Version {latest_version} set as @champion in {env}")
+            logger.info(f"Version {latest_version} set as @champion (first model in {env})")
+        else:
+            client.set_registered_model_alias(
+                name=full_model_name,
+                alias="challenger",
+                version=latest_version,
+            )
+            logger.info(f"Version {latest_version} set as @challenger in {env}")
+            logger.info("Run promotion job to evaluate challenger vs champion")
 
 
 def main() -> None:

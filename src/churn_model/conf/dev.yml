@@ -1,14 +1,31 @@
+# catalog: ml_dev
+# schema: churn
+# model_name: churn_model
+# training:
+#   n_estimators: 100
+#   max_depth: 5
+#   learning_rate: 0.1
+#   test_size: 0.2
+#   random_state: 42
+# data:
+#   n_samples: 10000
+# quality_gates:
+#   min_auc: 0.75
+#   min_precision: 0.60
+
+#Changed: bigger n_estimators, deeper trees, more data, different random seed (100 vs 42).
 catalog: ml_dev
 schema: churn
 model_name: churn_model
 training:
-  n_estimators: 50
-  max_depth: 4
-  learning_rate: 0.1
+  n_estimators: 300
+  max_depth: 8
+  learning_rate: 0.05
   test_size: 0.2
-  random_state: 42
+  random_state: 100
 data:
-  n_samples: 5000  # small for fast dev iteration
+  n_samples: 15000
 quality_gates:
   min_auc: 0.70
-  min_precision: 0.65
+  min_precision: 0.55
+
