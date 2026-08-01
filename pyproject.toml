@@ -52,4 +52,4 @@ ignore = ["E501", "N803", "N806"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-v --cov=churn_model --cov-report=term-missing"
+addopts = "-v"
