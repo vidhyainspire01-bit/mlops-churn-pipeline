@@ -55,3 +55,21 @@ python -m build --wheel
 databricks bundle deploy --target dev
 databricks bundle run churn_training_job --target dev
 databricks bundle run churn_promotion_job --target dev
+
+Phase 3: CI/CD	- GitHub Actions + OIDC federation + PR quality gates
+Phase 4: Serving -	Databricks Model Serving endpoint (simplified)
+Phase 5: Drift Monitoring - PSI drift job writing to Delta
+Phase 6: Docs + Demo - README, architecture diagram, demo script
+
+Phase3:
+create microsoft etra id to connect github action to deploy the azure resource securely for that we need to connect github organization name and id
+
+# Get GitHub user/org ID (works for personal accounts too)
+curl -s https://api.github.com/users/vidhyainspire01-bit | grep '"id"' | head -1
+eg:  "id": 223743781
+
+# Get repository ID
+curl -s https://api.github.com/repos/vidhyainspire01-bit/mlops-churn-pipeline | grep '"id"' | head -1
+eg: 1317610814
+Now we have 3 federated credentials: main, develop, pull_request. Each maps to a different scenario in the CI/CD flow.
+Step 3.3 — Get the Databricks Service Principal ID # CI test
